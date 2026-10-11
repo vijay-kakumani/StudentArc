@@ -416,6 +416,17 @@ def get_report_insights():
         acad_flags = sum(1 for r in filtered if r.get('academic_score') is not None and r['academic_score'] < 60)
         place_flags = sum(1 for r in filtered if r.get('placement_score') is not None and r['placement_score'] < 60)
         
+        # Calculate actual completeness across key fields
+        expected_keys = ['cgpa', 'backlog_count', 'overall_attendance_percentage', 'academic_score', 'placement_score']
+        total_checks = total * len(expected_keys)
+        populated_checks = 0
+        for r in filtered:
+            raw = r.get('raw_data', {}) or {}
+            for k in expected_keys:
+                if r.get(k) is not None or raw.get(k) is not None:
+                    populated_checks += 1
+        completeness = round(populated_checks / total_checks * 100) if total_checks else 0
+
         summary = {
             "totalStudents": total,
             "studentsAnalyzed": count_success,
@@ -426,11 +437,17 @@ def get_report_insights():
             "averagePlacementScore": round(sum_place / count_place, 1) if count_place else "N/A",
             "department": department or "All Departments",
             "semester": semester or "All Semesters",
-            "dataCompleteness": 85
+            "dataCompleteness": completeness
         }
         
         brief = AIBriefService.generate_report_brief(summary)
         return jsonify(brief), 200
     except Exception as e:
-        return jsonify({"status": "error", "error": str(e)}), 500
+        try:
+            from services.ai_service import AIBriefService
+            fallback = AIBriefService._generate_fallback_report_brief(summary if 'summary' in locals() else {}, reason="Temporary system error")
+            fallback['error'] = str(e)
+            return jsonify(fallback), 200
+        except Exception:
+            return jsonify({"status": "error", "error": str(e)}), 500
 

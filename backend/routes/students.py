@@ -58,4 +58,12 @@ def get_student_brief(student_id):
         brief = AIBriefService.generate_brief(student)
         return jsonify({"data": brief}), 200
     except Exception as e:
+        try:
+            if 'student' in locals() and student:
+                from services.ai_service import AIBriefService
+                fallback = AIBriefService._generate_fallback_brief(student, reason="Temporary system error")
+                fallback['error'] = str(e)
+                return jsonify({"data": fallback}), 200
+        except Exception:
+            pass
         return jsonify({"error": str(e)}), 500
