@@ -1,3 +1,4 @@
+import re
 from flask import Flask, jsonify
 from flask_cors import CORS
 from config import Config
@@ -16,12 +17,22 @@ def create_app():
     origins = [Config.FRONTEND_ORIGIN] if Config.FRONTEND_ORIGIN and Config.FRONTEND_ORIGIN != "*" else "*"
     if isinstance(origins, list):
         origins.extend([
+            "https://student-arc.vercel.app",
+            "https://studentarc.vercel.app",
+            re.compile(r"^https://.*\.vercel\.app$"),
             "http://localhost:5173", "http://127.0.0.1:5173",
             "http://localhost:5174", "http://127.0.0.1:5174",
             "http://localhost:5000", "http://127.0.0.1:5000",
             "http://localhost:3000", "http://127.0.0.1:3000"
         ])
-        origins = list(set(origins))
+        seen = set()
+        deduped = []
+        for o in origins:
+            key = o.pattern if hasattr(o, 'pattern') else o
+            if key not in seen:
+                seen.add(key)
+                deduped.append(o)
+        origins = deduped
     CORS(app, resources={r"/api/*": {"origins": origins}})
     
     # Register blueprints
