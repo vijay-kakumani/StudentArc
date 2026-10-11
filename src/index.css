@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+@theme {
+  --color-app-bg: #E1E2E5;
+  --color-surface: #F4F5F7;
+  --color-card: #FFFFFF;
+  --color-card-border: #E4E6EA;
+  --color-text-main: #172B4D;
+  --color-text-muted: #8793A5;
+  --color-orange-primary: #F47735;
+  --color-peach-light: #FFB080;
+  
+  --radius-card: 16px;
+  --radius-card-sm: 12px;
+}
+
+/* StudentArc Shared Card & Panel Treatment (14-16px outer, 10-12px nested) */
+.sa-card {
+  background-color: var(--color-card);
+  border: 1px solid var(--color-card-border);
+  border-radius: 16px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03);
+}
+
+.sa-card-nested {
+  border-radius: 12px;
+  border: 1px solid var(--color-card-border);
+}
+
